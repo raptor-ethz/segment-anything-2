@@ -689,7 +689,13 @@ class SAM2VideoPredictor(SAM2Base):
         """
         Run tracking on a single frame based on current inputs and previous memory.
         """
-        inference_state["images"][frame_idx] = frame
+        if frame_idx >= len(inference_state["images"]) - 1:
+            inference_state["images"] = torch.cat(
+                [inference_state["images"], frame[None, ...]], dim=0)
+            inference_state["num_frames"] += 1
+        else:
+            inference_state["images"][frame_idx] = frame
+
         batch_size = self._get_obj_num(inference_state)
         output_dict = inference_state["output_dict"]
         # Add a frame to conditioning output if it's an initial conditioning frame or
